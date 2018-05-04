@@ -23,19 +23,6 @@ def exec_cmd(command):
         print 'stdout: [%s]' % stdout
     return result
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--cat", help="Show all of the output file", dest="cat", default=True, action='store_true')
-parser.add_argument("--head", help="Show the beginning of the output file", dest="head", default=False, action='store_true')
-parser.add_argument("--tail", help="Show the end of the output file", dest="tail", default=False, action='store_true')
-parser.add_argument("--err", help="Show the stderr of the job", dest="err", default=False, action='store_true')
-parser.add_argument("--out", help="Show the stdout of the job", dest="out", default=True, action='store_true')
-parser.add_argument("--spool", help="Show the stdout of the job", default="/var/spool/torque/spool")
-parser.add_argument("--ssh", help="Use SSH command", default=True, dest="ssh", action='store_true')
-parser.add_argument("--rsh", help="Use RSH command", default=False, dest="rsh", action='store_true')
-parser.add_argument('jobid', help="Jobid", type=int)
-
-args = parser.parse_args()
-
 def get_command(ssh, rsh, cat, head, tail, err, out, spool, host, jobid, truehost):
     if head:
         cmd = "head"
@@ -78,10 +65,28 @@ def get_host(jobid):
 
     return host_string
 
-# Parse exec_host
-truehost = os.environ.get("HOSTNAME")
-host = get_host(args.jobid)
-cmd = get_command(args.ssh, args.rsh, args.cat, args.head, args.tail, args.err, args.out, args.spool, host, args.jobid, truehost)
-
-result = exec_cmd(cmd)
-print result.stdout
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--cat", help="Show all of the output file", dest="cat", default=True, action='store_true')
+    parser.add_argument("--head", help="Show the beginning of the output file", dest="head", default=False, action='store_true')
+    parser.add_argument("--tail", help="Show the end of the output file", dest="tail", default=False, action='store_true')
+    parser.add_argument("--err", help="Show the stderr of the job", dest="err", default=False, action='store_true')
+    parser.add_argument("--out", help="Show the stdout of the job", dest="out", default=True, action='store_true')
+    parser.add_argument("--spool", help="Show the stdout of the job", default="/var/spool/torque/spool")
+    parser.add_argument("--ssh", help="Use SSH command", default=True, dest="ssh", action='store_true')
+    parser.add_argument("--rsh", help="Use RSH command", default=False, dest="rsh", action='store_true')
+    parser.add_argument('jobid', help="Jobid", type=int)
+    
+    args = parser.parse_args()
+    
+    # Parse exec_host
+    truehost = os.environ.get("HOSTNAME")
+    host = get_host(args.jobid)
+    
+    if host is None:
+        pass
+    else:
+        cmd = get_command(args.ssh, args.rsh, args.cat, args.head, args.tail, args.err, args.out, args.spool, host, args.jobid, truehost)
+    
+        result = exec_cmd(cmd)
+        print result.stdout
